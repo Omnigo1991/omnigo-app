@@ -2,8 +2,14 @@
 
 import { redirect } from 'next/navigation';
 import { query } from '../../lib/db';
+import { getCurrentUser } from '../../lib/users';
 
 export async function createListing(formData) {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('Bitte melde dich an, um ein Inserat zu erstellen.');
+  }
+
   const title = formData.get('title');
   const description = formData.get('description');
   const priceRaw = formData.get('price');
@@ -18,10 +24,10 @@ export async function createListing(formData) {
   const price = priceRaw ? Number(priceRaw) : null;
 
   const result = await query(
-    `INSERT INTO listings (title, description, price, category, condition, location)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO listings (title, description, price, category, condition, location, user_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING id`,
-    [title, description || null, price, category || null, condition || null, location || null]
+    [title, description || null, price, category || null, condition || null, location || null, user.id]
   );
 
   const newId = result.rows[0].id;
@@ -29,6 +35,16 @@ export async function createListing(formData) {
 }
 
 export async function updateListing(id, formData) {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('Bitte melde dich an.');
+  }
+
+  const existing = await query('SELECT user_id FROM listings WHERE id = $1', [id]);
+  if (!existing.rows[0] || existing.rows[0].user_id !== user.id) {
+    throw new Error('Du kannst nur eigene Inserate bearbeiten.');
+  }
+
   const title = formData.get('title');
   const description = formData.get('description');
   const priceRaw = formData.get('price');
@@ -53,6 +69,16 @@ export async function updateListing(id, formData) {
 }
 
 export async function deleteListing(id) {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('Bitte melde dich an.');
+  }
+
+  const existing = await query('SELECT user_id FROM listings WHERE id = $1', [id]);
+  if (!existing.rows[0] || existing.rows[0].user_id !== user.id) {
+    throw new Error('Du kannst nur eigene Inserate löschen.');
+  }
+
   await query('DELETE FROM listings WHERE id = $1', [id]);
   redirect('/');
 }
