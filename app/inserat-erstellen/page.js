@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import { createListing } from '../actions/listings';
+import { getCurrentUser } from '../../lib/users';
 
 const FONT =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -15,7 +17,60 @@ const inputStyle = {
   boxSizing: 'border-box',
 };
 
-export default function CreateListingPage() {
+export default async function CreateListingPage() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return (
+      <main
+        style={{
+          fontFamily: FONT,
+          maxWidth: 480,
+          margin: '0 auto',
+          padding: '80px 20px',
+          textAlign: 'center',
+        }}
+      >
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#1D1D1F', margin: 0 }}>
+          Bitte zuerst anmelden
+        </h1>
+        <p style={{ color: '#6E6E73', marginTop: 10 }}>
+          Um ein Inserat zu erstellen, brauchst du ein Konto.
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
+          <Link
+            href="/anmelden"
+            style={{
+              background: '#1FD8A4',
+              color: '#1D1D1F',
+              padding: '10px 20px',
+              borderRadius: 999,
+              fontWeight: 700,
+              textDecoration: 'none',
+              fontSize: 14,
+            }}
+          >
+            Anmelden
+          </Link>
+          <Link
+            href="/registrieren"
+            style={{
+              border: '1.5px solid #1D1D1F',
+              color: '#1D1D1F',
+              padding: '10px 20px',
+              borderRadius: 999,
+              fontWeight: 600,
+              textDecoration: 'none',
+              fontSize: 14,
+            }}
+          >
+            Registrieren
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main style={{ fontFamily: FONT, maxWidth: 520, margin: '0 auto', padding: '60px 20px' }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: '#1D1D1F' }}>
