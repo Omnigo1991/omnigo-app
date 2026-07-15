@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { query } from '../lib/db';
+import { getCurrentUser } from '../lib/users';
+import { logoutUser } from './actions/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,8 +21,44 @@ export default async function HomePage() {
     dbError = err.message;
   }
 
+  const user = await getCurrentUser();
+
   return (
     <main style={{ fontFamily: FONT, maxWidth: 1100, margin: '0 auto', padding: '60px 20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, fontSize: 13 }}>
+        {user ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#6E6E73' }}>
+            <span>Angemeldet als {user.email}</span>
+            <form action={logoutUser}>
+              <button
+                type="submit"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#1D1D1F',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: 13,
+                  padding: 0,
+                }}
+              >
+                Abmelden
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 14 }}>
+            <Link href="/anmelden" style={{ color: '#1D1D1F' }}>
+              Anmelden
+            </Link>
+            <Link href="/registrieren" style={{ color: '#1D1D1F', fontWeight: 600 }}>
+              Registrieren
+            </Link>
+          </div>
+        )}
+      </div>
+
       <h1 style={{ fontSize: 40, fontWeight: 700, margin: 0, color: '#1D1D1F' }}>
         omni<span style={{ color: '#1FD8A4' }}>go</span>
       </h1>
