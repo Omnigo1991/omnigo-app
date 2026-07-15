@@ -1,25 +1,15 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { query } from '../../../../lib/db';
-import { updateListing } from '../../../actions/listings';
+import { query } from '../../../lib/db';
+import { deleteListing } from '../../actions/listings';
+import DeleteListingButton from '../../components/DeleteListingButton';
 
 export const dynamic = 'force-dynamic';
 
 const FONT =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
-const inputStyle = {
-  display: 'block',
-  width: '100%',
-  marginTop: 6,
-  padding: '10px 12px',
-  border: '1.5px solid #D2D2D7',
-  borderRadius: 10,
-  fontFamily: 'inherit',
-  fontSize: 14,
-  boxSizing: 'border-box',
-};
-
-export default async function EditListingPage({ params }) {
+export default async function ListingDetailPage({ params }) {
   const { rows } = await query('SELECT * FROM listings WHERE id = $1', [params.id]);
   const listing = rows[0];
 
@@ -27,96 +17,48 @@ export default async function EditListingPage({ params }) {
     notFound();
   }
 
-  const updateWithId = updateListing.bind(null, listing.id);
+  const deleteWithId = deleteListing.bind(null, listing.id);
 
   return (
-    <main style={{ fontFamily: FONT, maxWidth: 520, margin: '0 auto', padding: '60px 20px' }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: '#1D1D1F' }}>
-        Inserat bearbeiten
+    <main style={{ fontFamily: FONT, maxWidth: 640, margin: '0 auto', padding: '60px 20px' }}>
+      <Link href="/" style={{ fontSize: 13, color: '#6E6E73' }}>
+        &larr; Zurück zur Übersicht
+      </Link>
+
+      <h1 style={{ fontSize: 28, fontWeight: 700, marginTop: 20, color: '#1D1D1F' }}>
+        {listing.title}
       </h1>
+      <div style={{ fontSize: 24, fontWeight: 700, marginTop: 10, color: '#1D1D1F' }}>
+        {listing.price ? `CHF ${Number(listing.price).toFixed(2)}` : 'Preis auf Anfrage'}
+      </div>
 
-      <form
-        action={updateWithId}
-        style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 30 }}
-      >
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
-          Titel
-          <input name="title" required defaultValue={listing.title} style={inputStyle} />
-        </label>
+      <div style={{ display: 'flex', gap: 10, marginTop: 14, fontSize: 12, color: '#6E6E73', flexWrap: 'wrap' }}>
+        {listing.category && <span>{listing.category}</span>}
+        {listing.condition && <span>· {listing.condition}</span>}
+        {listing.location && <span>· {listing.location}</span>}
+      </div>
 
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
-          Beschreibung
-          <textarea
-            name="description"
-            rows={4}
-            defaultValue={listing.description || ''}
-            style={inputStyle}
-          />
-        </label>
+      {listing.description && (
+        <p style={{ marginTop: 24, lineHeight: 1.6, color: '#1D1D1F' }}>{listing.description}</p>
+      )}
 
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
-          Preis (CHF)
-          <input
-            name="price"
-            type="number"
-            step="0.01"
-            min="0"
-            defaultValue={listing.price ?? ''}
-            style={inputStyle}
-          />
-        </label>
-
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
-          Kategorie
-          <select name="category" defaultValue={listing.category || ''} style={inputStyle}>
-            <option value="" disabled>
-              Bitte wählen
-            </option>
-            <option value="Fahrzeuge">Fahrzeuge</option>
-            <option value="Elektronik">Elektronik</option>
-            <option value="Mode & Accessoires">Mode &amp; Accessoires</option>
-            <option value="Haushalt & Wohnen">Haushalt &amp; Wohnen</option>
-            <option value="Sport & Freizeit">Sport &amp; Freizeit</option>
-            <option value="Immobilien">Immobilien</option>
-            <option value="Sammeln & Kunst">Sammeln &amp; Kunst</option>
-          </select>
-        </label>
-
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
-          Zustand
-          <select name="condition" defaultValue={listing.condition || ''} style={inputStyle}>
-            <option value="" disabled>
-              Bitte wählen
-            </option>
-            <option value="Neu">Neu</option>
-            <option value="Wie neu">Wie neu</option>
-            <option value="Gebraucht – sehr guter Zustand">Gebraucht – sehr guter Zustand</option>
-            <option value="Gebraucht – guter Zustand">Gebraucht – guter Zustand</option>
-          </select>
-        </label>
-
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
-          Standort
-          <input name="location" defaultValue={listing.location || ''} style={inputStyle} />
-        </label>
-
-        <button
-          type="submit"
+      <div style={{ display: 'flex', gap: 10, marginTop: 30 }}>
+        <Link
+          href={`/inserat/${listing.id}/bearbeiten`}
           style={{
-            marginTop: 10,
-            background: '#1FD8A4',
+            border: '1.5px solid #1D1D1F',
             color: '#1D1D1F',
-            border: 'none',
             borderRadius: 999,
-            padding: '12px 20px',
-            fontWeight: 700,
-            fontSize: 15,
-            cursor: 'pointer',
+            padding: '9px 18px',
+            fontWeight: 600,
+            fontSize: 13,
+            textDecoration: 'none',
           }}
         >
-          Änderungen speichern
-        </button>
-      </form>
+          Bearbeiten
+        </Link>
+        <DeleteListingButton action={deleteWithId} />
+      </div>
     </main>
   );
 }
