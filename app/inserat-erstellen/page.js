@@ -77,10 +77,28 @@ export default async function CreateListingPage() {
         Inserat erstellen
       </h1>
       <p style={{ color: '#6E6E73', marginTop: 8, marginBottom: 30 }}>
-        Fotos und KI-Vorschläge folgen in einem späteren Schritt – für jetzt reicht der Text.
+        Lade Fotos hoch und beschreibe dein Inserat – KI-Vorschläge folgen in einem späteren Schritt.
       </p>
 
-      <form action={createListing} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <form
+        action={createListing}
+        encType="multipart/form-data"
+        style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+      >
+        <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
+          Fotos (bis zu 5)
+          <input
+            name="images"
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ ...inputStyle, padding: '8px 12px' }}
+          />
+          <span style={{ display: 'block', fontSize: 12, color: '#6E6E73', marginTop: 4 }}>
+            Alle Fotos zusammen dürfen ca. 4 MB nicht überschreiten.
+          </span>
+        </label>
+
         <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
           Titel
           <input name="title" required style={inputStyle} />
