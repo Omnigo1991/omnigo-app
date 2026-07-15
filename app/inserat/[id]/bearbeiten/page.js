@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { query } from '../../../../lib/db';
 import { updateListing } from '../../../actions/listings';
+import { getCurrentUser } from '../../../../lib/users';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,28 @@ export default async function EditListingPage({ params }) {
 
   if (!listing) {
     notFound();
+  }
+
+  const user = await getCurrentUser();
+  if (!user || listing.user_id !== user.id) {
+    return (
+      <main
+        style={{
+          fontFamily: FONT,
+          maxWidth: 480,
+          margin: '0 auto',
+          padding: '80px 20px',
+          textAlign: 'center',
+        }}
+      >
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1D1D1F', margin: 0 }}>
+          Kein Zugriff
+        </h1>
+        <p style={{ color: '#6E6E73', marginTop: 10 }}>
+          Du kannst nur eigene Inserate bearbeiten.
+        </p>
+      </main>
+    );
   }
 
   const updateWithId = updateListing.bind(null, listing.id);
