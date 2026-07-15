@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { query } from '../../../../lib/db';
-import { updateListing } from '../../../actions/listings';
+import { updateListing, deleteListingImage } from '../../../actions/listings';
 import { getCurrentUser } from '../../../../lib/users';
 
 export const dynamic = 'force-dynamic';
@@ -52,16 +52,78 @@ export default async function EditListingPage({ params }) {
 
   const updateWithId = updateListing.bind(null, listing.id);
 
+  const { rows: images } = await query(
+    'SELECT id, url FROM listing_images WHERE listing_id = $1 ORDER BY position ASC, id ASC',
+    [listing.id]
+  );
+
   return (
     <main style={{ fontFamily: FONT, maxWidth: 520, margin: '0 auto', padding: '60px 20px' }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: '#1D1D1F' }}>
         Inserat bearbeiten
       </h1>
 
+      {images.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F', marginBottom: 8 }}>
+            Vorhandene Fotos
+          </div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {images.map((img) => {
+              const deleteImageWithIds = deleteListingImage.bind(null, listing.id, img.id);
+              return (
+                <div key={img.id} style={{ position: 'relative' }}>
+                  <img
+                    src={img.url}
+                    alt=""
+                    style={{
+                      width: 90,
+                      height: 90,
+                      objectFit: 'cover',
+                      borderRadius: 10,
+                      border: '1px solid #D2D2D7',
+                      display: 'block',
+                    }}
+                  />
+                  <form action={deleteImageWithIds} style={{ marginTop: 4 }}>
+                    <button
+                      type="submit"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#B3261E',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                    >
+                      Entfernen
+                    </button>
+                  </form>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <form
         action={updateWithId}
+        encType="multipart/form-data"
         style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 30 }}
       >
+        <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
+          Weitere Fotos hinzufügen
+          <input
+            name="images"
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ ...inputStyle, padding: '8px 12px' }}
+          />
+        </label>
+
         <label style={{ fontSize: 13, fontWeight: 600, color: '#1D1D1F' }}>
           Titel
           <input name="title" required defaultValue={listing.title} style={inputStyle} />
