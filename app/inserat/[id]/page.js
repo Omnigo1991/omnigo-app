@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { query } from '../../../lib/db';
 import { deleteListing } from '../../actions/listings';
+import { getCurrentUser } from '../../../lib/users';
 import DeleteListingButton from '../../components/DeleteListingButton';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,9 @@ export default async function ListingDetailPage({ params }) {
   if (!listing) {
     notFound();
   }
+
+  const user = await getCurrentUser();
+  const isOwner = Boolean(user && listing.user_id === user.id);
 
   const deleteWithId = deleteListing.bind(null, listing.id);
 
@@ -42,23 +46,25 @@ export default async function ListingDetailPage({ params }) {
         <p style={{ marginTop: 24, lineHeight: 1.6, color: '#1D1D1F' }}>{listing.description}</p>
       )}
 
-      <div style={{ display: 'flex', gap: 10, marginTop: 30 }}>
-        <Link
-          href={`/inserat/${listing.id}/bearbeiten`}
-          style={{
-            border: '1.5px solid #1D1D1F',
-            color: '#1D1D1F',
-            borderRadius: 999,
-            padding: '9px 18px',
-            fontWeight: 600,
-            fontSize: 13,
-            textDecoration: 'none',
-          }}
-        >
-          Bearbeiten
-        </Link>
-        <DeleteListingButton action={deleteWithId} />
-      </div>
+      {isOwner && (
+        <div style={{ display: 'flex', gap: 10, marginTop: 30 }}>
+          <Link
+            href={`/inserat/${listing.id}/bearbeiten`}
+            style={{
+              border: '1.5px solid #1D1D1F',
+              color: '#1D1D1F',
+              borderRadius: 999,
+              padding: '9px 18px',
+              fontWeight: 600,
+              fontSize: 13,
+              textDecoration: 'none',
+            }}
+          >
+            Bearbeiten
+          </Link>
+          <DeleteListingButton action={deleteWithId} />
+        </div>
+      )}
     </main>
   );
 }
