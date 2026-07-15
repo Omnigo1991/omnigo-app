@@ -13,7 +13,8 @@
     "react": "^18",
     "react-dom": "^18",
     "pg": "^8.11.5",
-    "bcryptjs": "^2.4.3"
+    "bcryptjs": "^2.4.3",
+    "@vercel/blob": "^2.6.1"
   },
   "eslintConfig": {
     "extends": "next/core-web-vitals"
