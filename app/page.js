@@ -14,7 +14,10 @@ export default async function HomePage() {
 
   try {
     const result = await query(
-      'SELECT id, title, price, category FROM listings ORDER BY created_at DESC LIMIT 24'
+      `SELECT l.id, l.title, l.price, l.category,
+        (SELECT url FROM listing_images WHERE listing_id = l.id ORDER BY position ASC, id ASC LIMIT 1) AS image_url
+       FROM listings l
+       ORDER BY l.created_at DESC LIMIT 24`
     );
     listings = result.rows;
   } catch (err) {
@@ -116,15 +119,37 @@ export default async function HomePage() {
                 display: 'block',
                 border: '1px solid #D2D2D7',
                 borderRadius: 12,
-                padding: 16,
+                overflow: 'hidden',
                 textDecoration: 'none',
                 color: '#1D1D1F',
               }}
             >
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 6 }}>{item.title}</div>
-              <div style={{ fontSize: 13, color: '#6E6E73' }}>{item.category || 'Ohne Kategorie'}</div>
-              <div style={{ fontWeight: 700, marginTop: 8 }}>
-                {item.price ? `CHF ${Number(item.price).toFixed(2)}` : 'Preis auf Anfrage'}
+              <div
+                style={{
+                  width: '100%',
+                  aspectRatio: '4 / 3',
+                  background: '#F5F5F7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {item.image_url ? (
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <span style={{ fontSize: 12, color: '#AEAEB2' }}>Kein Foto</span>
+                )}
+              </div>
+              <div style={{ padding: 16 }}>
+                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 6 }}>{item.title}</div>
+                <div style={{ fontSize: 13, color: '#6E6E73' }}>{item.category || 'Ohne Kategorie'}</div>
+                <div style={{ fontWeight: 700, marginTop: 8 }}>
+                  {item.price ? `CHF ${Number(item.price).toFixed(2)}` : 'Preis auf Anfrage'}
+                </div>
               </div>
             </Link>
           ))}
